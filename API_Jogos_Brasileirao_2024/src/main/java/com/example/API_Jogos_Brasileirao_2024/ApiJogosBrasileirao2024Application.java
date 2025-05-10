@@ -1,5 +1,6 @@
 package com.example.API_Jogos_Brasileirao_2024;
 
+import com.example.API_Jogos_Brasileirao_2024.controller.TimeController;
 import com.example.API_Jogos_Brasileirao_2024.model.Jogo;
 import com.example.API_Jogos_Brasileirao_2024.repository.JogoRepository;
 import com.example.API_Jogos_Brasileirao_2024.model.Time;
@@ -17,6 +18,7 @@ public class ApiJogosBrasileirao2024Application {
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(ApiJogosBrasileirao2024Application.class, args);
 
+        TimeController timeController = context.getBean(TimeController.class);
         JogoRepository repoJ = context.getBean(JogoRepository.class);
         TimeRepository repoT = context.getBean(TimeRepository.class);
 //		List<Jogo> jogos = repository.buscarJogosPorTime("Vitória");
@@ -36,10 +38,13 @@ public class ApiJogosBrasileirao2024Application {
         List<Jogo> jogos = repoJ.buscarJogosPorTime("Atlético-MG");
 //		System.out.println(jogos);
 //		System.out.println(time);
-        times.sort(Comparator.comparing(Time::getPontos).reversed());
+//        times.sort(Comparator.comparing(Time::getPontos).reversed());
 //		times.forEach(equipe -> {
 //			System.out.println(equipe.getNome() + " | " + equipe.getPontos());
 //		});
+//        System.out.println(timeController.getDadosTime("Santos"));
+//        System.out.println(repoJ.buscarJogosPorRodada(1));
+//        System.out.println(repoT.buscarDadosPorTime("Santos"));
     }
 
 }

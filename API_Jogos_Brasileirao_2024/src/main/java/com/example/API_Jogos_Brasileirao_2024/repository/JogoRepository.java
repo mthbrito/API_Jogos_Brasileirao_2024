@@ -1,7 +1,9 @@
 package com.example.API_Jogos_Brasileirao_2024.repository;
 
+import com.example.API_Jogos_Brasileirao_2024.exception.JogoNaoEncontradoException;
 import com.example.API_Jogos_Brasileirao_2024.model.Jogo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -26,16 +28,20 @@ public class JogoRepository {
         );
     }
 
-    public List<Jogo> buscarJogosPorRodada(int rodada) {
+    public List<Jogo> buscarJogosPorRodada(String rodada) {
+        int nRodada = Integer.parseInt(rodada);
         String sql = "SELECT * FROM jogos_brasileirao_2024 WHERE rodada = ?";
         return jdbcTemplate.query(
                 sql,
                 rowMapperJogo(),
-                rodada
+                nRodada
         );
     }
 
     public List<Jogo> buscarJogosPorTime(String time) {
+        if (isTimeInvalido(time)) {
+            throw new JogoNaoEncontradoException(time);
+        }
         String sql = "SELECT * FROM jogos_brasileirao_2024 WHERE mandante = ? OR visitante = ?";
         return jdbcTemplate.query(
                 sql,
@@ -46,6 +52,9 @@ public class JogoRepository {
     }
 
     public List<Jogo> buscarJogosPorTimeMandante(String time) {
+        if (isTimeInvalido(time)) {
+            throw new JogoNaoEncontradoException(time);
+        }
         String sql = "SELECT * FROM jogos_brasileirao_2024 WHERE mandante = ?";
         return jdbcTemplate.query(
                 sql,
@@ -55,6 +64,9 @@ public class JogoRepository {
     }
 
     public List<Jogo> buscarJogosPorTimeVisitante(String time) {
+        if (isTimeInvalido(time)) {
+            throw new JogoNaoEncontradoException(time);
+        }
         String sql = "SELECT * FROM jogos_brasileirao_2024 WHERE visitante = ?";
         return jdbcTemplate.query(
                 sql,
@@ -64,6 +76,9 @@ public class JogoRepository {
     }
 
     public List<Jogo> buscarVitoriasPorTime(String time) {
+        if (isTimeInvalido(time)) {
+            throw new JogoNaoEncontradoException(time);
+        }
         String sql = "SELECT * FROM jogos_brasileirao_2024 WHERE (mandante = ? and gols_mandante > gols_visitante) OR (visitante = ? and gols_visitante > gols_mandante)";
         return jdbcTemplate.query(
                 sql,
@@ -74,6 +89,9 @@ public class JogoRepository {
     }
 
     public List<Jogo> buscarEmpatesPorTime(String time) {
+        if (isTimeInvalido(time)) {
+            throw new JogoNaoEncontradoException(time);
+        }
         String sql = "SELECT * FROM jogos_brasileirao_2024 WHERE (mandante = ? and gols_mandante = gols_visitante) OR (visitante = ? and gols_visitante = gols_mandante)";
         return jdbcTemplate.query(
                 sql,
@@ -83,7 +101,10 @@ public class JogoRepository {
         );
     }
 
-    public List<Jogo> buscarDerrotasPorTime(String time) {
+    public List<Jogo> buscarDerrotasPorTime(String time) throws DataAccessException {
+        if (isTimeInvalido(time)) {
+            throw new JogoNaoEncontradoException(time);
+        }
         String sql = "SELECT * FROM jogos_brasileirao_2024 WHERE (mandante = ? and gols_mandante < gols_visitante) OR (visitante = ? and gols_visitante < gols_mandante)";
         return jdbcTemplate.query(
                 sql,
@@ -102,5 +123,10 @@ public class JogoRepository {
                 rs.getString("visitante"),
                 rs.getInt("gols_visitante")
         );
+    }
+
+    private boolean isTimeInvalido(String time) throws DataAccessException {
+        String sql = "SELECT COUNT(*) = 0 FROM jogos_brasileirao_2024 WHERE mandante = ? OR visitante = ?";
+        return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, time, time));
     }
 }
