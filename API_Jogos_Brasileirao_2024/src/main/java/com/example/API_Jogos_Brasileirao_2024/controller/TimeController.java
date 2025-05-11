@@ -1,12 +1,10 @@
 package com.example.API_Jogos_Brasileirao_2024.controller;
 
-import com.example.API_Jogos_Brasileirao_2024.exception.DadosNaoEncontradosException;
-import com.example.API_Jogos_Brasileirao_2024.exception.TimeNaoEncontradoException;
+import com.example.API_Jogos_Brasileirao_2024.exception.*;
+
 import com.example.API_Jogos_Brasileirao_2024.model.Time;
-import com.example.API_Jogos_Brasileirao_2024.repository.TimeRepository;
 import com.example.API_Jogos_Brasileirao_2024.service.TimeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +18,6 @@ import java.util.List;
 @RequestMapping("api/brasileirao2024")
 public class TimeController {
 
-    @Autowired
     private final TimeService timeService;
 
     public TimeController(TimeService timeService) {
@@ -28,37 +25,37 @@ public class TimeController {
     }
 
     @GetMapping("times")
-    public ResponseEntity<List<String>> getTimes() {
+    public ResponseEntity<List<String>> buscarTimes() {
         try {
             return ResponseEntity.ok(timeService.buscarTimes()); //200
-        } catch (DadosNaoEncontradosException e) {
+        } catch (TimesNaoEncontradosException e) {
             return ResponseEntity.notFound().build(); //404
-        } catch (DataAccessException e) {
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build(); //503
+        } catch (AcessoAoBancoDeDadosException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //500
         }
     }
 
     @GetMapping("dados/times")
-    public ResponseEntity<List<Time>> getDadosTimes() {
+    public ResponseEntity<List<Time>> buscarDadosTimes() {
         try {
             return ResponseEntity.ok(timeService.buscarDadosTimes()); //200
-        } catch (DadosNaoEncontradosException e) {
+        } catch (TimesNaoEncontradosException e) {
             return ResponseEntity.notFound().build(); //404
-        } catch (DataAccessException e) {
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build(); //503
+        } catch (AcessoAoBancoDeDadosException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //500
         }
     }
 
     @GetMapping("dados/time/{time}")
-    public ResponseEntity<Time> getDadosTime(@PathVariable("time") String time) {
+    public ResponseEntity<Time> buscarDadosPorTime(@PathVariable("time") String time) {
         try {
             return ResponseEntity.ok(timeService.buscarDadosPorTime(time)); //200
-        } catch (IllegalArgumentException e) {
+        } catch (EntradaInvalidaException e) {
             return ResponseEntity.badRequest().build(); //400
         } catch (TimeNaoEncontradoException e) {
             return ResponseEntity.notFound().build(); //404
-        } catch (DataAccessException e) {
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build(); //503
+        } catch (AcessoAoBancoDeDadosException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //500
         }
     }
 

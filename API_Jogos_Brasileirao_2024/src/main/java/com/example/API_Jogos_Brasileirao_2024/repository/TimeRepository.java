@@ -15,12 +15,11 @@ public class TimeRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
     public TimeRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<String> buscarTimes() throws DataAccessException {
+    public List<String> buscarTimes() {
         String sql = "SELECT DISTINCT(mandante) FROM jogos_brasileirao_2024 ORDER BY mandante";
         return jdbcTemplate.query(
                 sql,
@@ -28,21 +27,28 @@ public class TimeRepository {
         );
     }
 
-    public Time buscarDadosPorTime(String time) throws DataAccessException, TimeNaoEncontradoException {
-        return new Time(time, getPontos(time), getVitorias(time), getEmpates(time), getDerrotas(time), getGolsPro(time), getGolsContra(time), getSaldoDeGols(time));
+    public Time buscarDadosPorTime(String time) {
+        Integer pontos = calcularPontos(time);
+        Integer vitorias = calcularVitorias(time);
+        Integer empates = calcularEmpates(time);
+        Integer derrotas = calcularDerrotas(time);
+        Integer golsPro = calcularGolsPro(time);
+        Integer golsContra = calcularGolsContra(time);
+        Integer saldoDeGols = calcularSaldoDeGols(time);
+        if (pontos == null || vitorias == null || empates == null || derrotas == null || golsPro == null || golsContra == null || saldoDeGols == null) {
+            return null;
+        }
+        return new Time(time, pontos, vitorias, empates, derrotas, golsPro, golsContra, saldoDeGols);
     }
 
-    public List<Time> buscarDadosTimes() throws DataAccessException {
+    public List<Time> buscarDadosTimes() {
         List<String> times = buscarTimes();
         List<Time> dadosTimes = new ArrayList<>();
         times.forEach(time -> dadosTimes.add(buscarDadosPorTime(time)));
         return dadosTimes;
     }
 
-    public Integer getPontos(String time) throws DataAccessException {
-        if (timeExiste(time)) {
-            throw new TimeNaoEncontradoException(time);
-        }
+    public Integer calcularPontos(String time) {
         String sql = "WITH " +
                 "win_mandante as (SELECT COUNT(*)*3 FROM jogos_brasileirao_2024 WHERE mandante = ? AND gols_mandante > gols_visitante)," +
                 "draw_mandante as (SELECT COUNT(*) FROM jogos_brasileirao_2024 WHERE mandante = ? AND gols_mandante = gols_visitante)," +
@@ -52,56 +58,41 @@ public class TimeRepository {
         return jdbcTemplate.queryForObject(sql, Integer.class, time, time, time, time);
     }
 
-    public Integer getVitorias(String time) throws DataAccessException {
-        if (timeExiste(time)) {
-            throw new TimeNaoEncontradoException(time);
-        }
+    public Integer calcularVitorias(String time) {
         String sql = "SELECT COUNT(*) FROM jogos_brasileirao_2024 WHERE (mandante = ? AND gols_mandante > gols_visitante) OR (visitante = ? AND gols_visitante > gols_mandante)";
         return jdbcTemplate.queryForObject(sql, Integer.class, time, time);
     }
 
-    public Integer getEmpates(String time) throws DataAccessException {
-        if (timeExiste(time)) {
-            throw new TimeNaoEncontradoException(time);
-        }
+    public Integer calcularEmpates(String time) {
         String sql = "SELECT COUNT(*) FROM jogos_brasileirao_2024 WHERE (mandante = ? AND gols_mandante = gols_visitante) OR (visitante = ? AND gols_visitante = gols_mandante)";
         return jdbcTemplate.queryForObject(sql, Integer.class, time, time);
     }
 
-    public Integer getDerrotas(String time) throws DataAccessException {
-        if (timeExiste(time)) {
-            throw new TimeNaoEncontradoException(time);
-        }
+    public Integer calcularDerrotas(String time) {
         String sql = "SELECT COUNT(*) FROM jogos_brasileirao_2024 WHERE (mandante = ? AND gols_mandante < gols_visitante) OR (visitante = ? AND gols_visitante < gols_mandante)";
         return jdbcTemplate.queryForObject(sql, Integer.class, time, time);
     }
 
-    public Integer getGolsPro(String time) throws DataAccessException {
-        if (timeExiste(time)) {
-            throw new TimeNaoEncontradoException(time);
-        }
+    public Integer calcularGolsPro(String time) {
         String sql = "SELECT " +
                 "(SELECT SUM(gols_mandante) FROM jogos_brasileirao_2024 WHERE mandante = ?) + " +
                 "(SELECT SUM(gols_visitante) FROM jogos_brasileirao_2024 WHERE visitante = ?) as gols_pro";
         return jdbcTemplate.queryForObject(sql, Integer.class, time, time);
     }
 
-    public Integer getGolsContra(String time) throws DataAccessException {
-        if (timeExiste(time)) {
-            throw new TimeNaoEncontradoException(time);
-        }
+    public Integer calcularGolsContra(String time) {
         String sql = "SELECT " +
                 "(SELECT SUM(gols_visitante) FROM jogos_brasileirao_2024 WHERE mandante = ?) + " +
                 "(SELECT SUM(gols_mandante) FROM jogos_brasileirao_2024 WHERE visitante = ?) as gols_contra";
         return jdbcTemplate.queryForObject(sql, Integer.class, time, time);
     }
 
-    public Integer getSaldoDeGols(String time) throws DataAccessException {
-        return getGolsPro(time) - getGolsContra(time);
-    }
-
-    private boolean timeExiste(String time) throws DataAccessException {
-        String sql = "SELECT COUNT(*) = 0 FROM jogos_brasileirao_2024 WHERE mandante = ? OR visitante = ?";
-        return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, time, time));
+    public Integer calcularSaldoDeGols(String time) {
+        Integer golsPro = calcularGolsPro(time);
+        Integer golsContra = calcularGolsContra(time);
+        if (golsPro == null || golsContra == null) {
+            return null;
+        }
+        return golsPro - golsContra;
     }
 }

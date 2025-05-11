@@ -26,25 +26,29 @@ public class ApiJogosBrasileirao2024Application {
 //		jogos.forEach(System.out::print);
 //		List<String> times = repoT.buscarTimes();
 //		times.forEach(System.out::println);
-        int pontos = repoT.getPontos("Palmeiras");
-        int vitorias = repoT.getVitorias("Palmeiras");
-        int derrotas = repoT.getDerrotas("Cuiabá");
-        int empates = repoT.getEmpates("Bahia");
-        int golsPro = repoT.getGolsPro("Fortaleza");
-        int golsContra = repoT.getGolsContra("Fortaleza");
-        int saldoDeGols = repoT.getSaldoDeGols("São Paulo");
+        int pontos = repoT.calcularPontos("Palmeiras");
+        int vitorias = repoT.calcularVitorias("Palmeiras");
+        int derrotas = repoT.calcularDerrotas("Cuiabá");
+        int empates = repoT.calcularEmpates("Bahia");
+        int golsPro = repoT.calcularGolsPro("Fortaleza");
+        int golsContra = repoT.calcularGolsContra("Fortaleza");
+        int saldoDeGols = repoT.calcularSaldoDeGols("São Paulo");
         Time time = repoT.buscarDadosPorTime("Atlético-MG");
         List<Time> times = repoT.buscarDadosTimes();
         List<Jogo> jogos = repoJ.buscarJogosPorTime("Atlético-MG");
 //		System.out.println(jogos);
 //		System.out.println(time);
-//        times.sort(Comparator.comparing(Time::getPontos).reversed());
+//        times.sort(Comparator.comparing(Time::calcularPontos).reversed());
 //		times.forEach(equipe -> {
-//			System.out.println(equipe.getNome() + " | " + equipe.getPontos());
+//			System.out.println(equipe.calcularNome() + " | " + equipe.calcularPontos());
 //		});
-//        System.out.println(timeController.getDadosTime("Santos"));
+//        System.out.println(timeController.calcularDadosTime("Santos"));
 //        System.out.println(repoJ.buscarJogosPorRodada(1));
 //        System.out.println(repoT.buscarDadosPorTime("Santos"));
+
+        System.out.println(repoT.calcularGolsPro("Santos"));
+        System.out.println(repoT.calcularSaldoDeGols("Santos"));
+        System.out.println(repoT.buscarDadosPorTime("Santos"));
     }
 
 }
