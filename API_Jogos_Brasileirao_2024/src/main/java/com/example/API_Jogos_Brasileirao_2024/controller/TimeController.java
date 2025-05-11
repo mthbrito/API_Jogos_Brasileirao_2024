@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/brasileirao2024")
@@ -53,6 +54,17 @@ public class TimeController {
         } catch (EntradaInvalidaException e) {
             return ResponseEntity.badRequest().build(); //400
         } catch (TimeNaoEncontradoException e) {
+            return ResponseEntity.notFound().build(); //404
+        } catch (AcessoAoBancoDeDadosException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //500
+        }
+    }
+
+    @GetMapping("classificacao")
+    public ResponseEntity<List<Map<String, Object>>> calcularClassificacao() {
+        try {
+            return ResponseEntity.ok(timeService.calcularClassificacao()); //200
+        } catch (TimesNaoEncontradosException e) {
             return ResponseEntity.notFound().build(); //404
         } catch (AcessoAoBancoDeDadosException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //500

@@ -49,6 +49,7 @@ public class ApiJogosBrasileirao2024Application {
         System.out.println(repoT.calcularGolsPro("Santos"));
         System.out.println(repoT.calcularSaldoDeGols("Santos"));
         System.out.println(repoT.buscarDadosPorTime("Santos"));
+        System.out.println(repoT.calcularClassificacao());
     }
 
 }

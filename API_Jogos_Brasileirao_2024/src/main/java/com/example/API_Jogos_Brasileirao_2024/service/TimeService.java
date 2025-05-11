@@ -6,6 +6,7 @@ import com.example.API_Jogos_Brasileirao_2024.repository.TimeRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TimeService {
@@ -33,6 +34,14 @@ public class TimeService {
         Time dadosTime = timeRepository.buscarDadosPorTime(time);
         checarSeTimeExiste(dadosTime, time);
         return dadosTime;
+    }
+
+    public List<Map<String, Object>> calcularClassificacao() {
+        List<Map<String, Object>> classificacao = timeRepository.calcularClassificacao();
+        if(classificacao.isEmpty()) {
+            throw new TimesNaoEncontradosException();
+        }
+        return classificacao;
     }
 
     private void checarSeTimeEValido(String time) {
